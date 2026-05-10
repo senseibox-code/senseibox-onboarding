@@ -16,13 +16,11 @@ Environment=TEXTUAL=1
 ExecStart=/opt/senseibox/senseibox-onboarding/.venv/bin/python -m senseibox_onboarding.app
 Restart=always
 RestartSec=5
-StandardInput=tty
+StandardInput=tty-force
 StandardOutput=tty
 StandardError=journal
 TTYPath=/dev/tty1
 TTYReset=yes
-TTYVHangup=yes
-TTYVTDisallocate=yes
 NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=full
