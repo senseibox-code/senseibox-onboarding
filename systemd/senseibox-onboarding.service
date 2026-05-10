@@ -13,7 +13,7 @@ WorkingDirectory=/opt/senseibox/senseibox-onboarding
 Environment=PYTHONUNBUFFERED=1
 Environment=TERM=linux
 Environment=TEXTUAL=1
-ExecStart=/opt/senseibox/senseibox-onboarding/.venv/bin/senseibox-onboarding
+ExecStart=/opt/senseibox/senseibox-onboarding/.venv/bin/python -m senseibox_onboarding.app
 Restart=always
 RestartSec=5
 StandardInput=tty

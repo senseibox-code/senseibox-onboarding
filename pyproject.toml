@@ -13,9 +13,6 @@ dev = [
   "pytest>=8,<9",
 ]
 
-[project.scripts]
-senseibox-onboarding = "senseibox_onboarding.app:main"
-senseibox-wifi-onboarding = "senseibox_onboarding.app:wifi_main"
 
 [build-system]
 requires = ["hatchling"]

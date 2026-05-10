@@ -18,20 +18,22 @@ Terminal-native first boot onboarding for Senseibox appliances. The app guides a
 python3 -m venv .venv
 . .venv/bin/activate
 pip install -e .
-senseibox-onboarding
+python -m senseibox_onboarding.app
 ```
 
 For development on machines without NetworkManager WiFi hardware, run with fake service data:
 
 ```bash
-SENSEIBOX_ONBOARDING_FAKE_NETWORK=1 senseibox-onboarding
+SENSEIBOX_ONBOARDING_FAKE_NETWORK=1 python -m senseibox_onboarding.app
 ```
 
-Run the WiFi-only flow:
+Run the WiFi-only flow during development:
 
 ```bash
-senseibox-wifi-onboarding
+python -m senseibox_onboarding.app --wifi-only
 ```
+
+The installed product commands are `senseibox-setup` and `senseibox-wifi-setup`. The app does not expose separate public Python console scripts; the wrappers call the Python module directly inside the installed virtualenv.
 
 ## Install As A Service
 

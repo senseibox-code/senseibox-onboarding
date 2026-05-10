@@ -170,17 +170,18 @@ def main() -> None:
         action="store_true",
         help="clear onboarding state and start setup again",
     )
+    parser.add_argument(
+        "--wifi-only",
+        action="store_true",
+        help="run only the WiFi setup flow",
+    )
     args = parser.parse_args()
 
     config = RuntimeConfig.from_env()
     if args.reset:
         reset_onboarding_state(config)
 
-    SenseiboxOnboardingApp(config).run(mouse=False)
-
-
-def wifi_main() -> None:
-    SenseiboxOnboardingApp(RuntimeConfig.from_env(), wifi_only=True).run(mouse=False)
+    SenseiboxOnboardingApp(config, wifi_only=args.wifi_only).run(mouse=False)
 
 
 if __name__ == "__main__":
