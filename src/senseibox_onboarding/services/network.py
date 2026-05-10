@@ -8,6 +8,9 @@ from senseibox_onboarding.models import ConnectionResult, Security, WifiNetwork
 from senseibox_onboarding.services.process import CommandRunner, CommandTimeout
 
 LOG = logging.getLogger(__name__)
+NO_WIFI_ADAPTER_MESSAGE = (
+    "No WiFi adapter was found. Connect WiFi hardware, then press r to refresh networks."
+)
 
 
 def _split_nmcli_row(row: str) -> list[str]:
@@ -42,6 +45,10 @@ class NetworkManagerService:
 
     async def scan_wifi(self) -> list[WifiNetwork]:
         LOG.info("Starting WiFi scan")
+        if not await self._has_wifi_device():
+            LOG.warning("No WiFi adapter found in NetworkManager device list")
+            raise RuntimeError(NO_WIFI_ADAPTER_MESSAGE)
+
         result = await self.runner.run(
             [
                 "nmcli",
@@ -113,6 +120,19 @@ class NetworkManagerService:
             key=lambda item: (item.in_use, item.signal, item.ssid.lower()),
             reverse=True,
         )
+
+    async def _has_wifi_device(self) -> bool:
+        result = await self.runner.run(
+            ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device", "status"],
+            timeout_s=5,
+        )
+        if result.returncode != 0:
+            return True
+        for line in result.stdout.splitlines():
+            fields = _split_nmcli_row(line)
+            if len(fields) >= 2 and fields[1] == "wifi":
+                return True
+        return False
 
     async def connect_wifi(
         self,

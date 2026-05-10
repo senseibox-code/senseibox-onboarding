@@ -127,9 +127,9 @@ class WifiScreen(WizardScreen):
     async def _scan(self) -> None:
         try:
             self.networks = await self.app.network_service.scan_wifi()
-        except Exception:
+        except Exception as error:
             status = self.query_one("#wifi_status", Static)
-            status.update("Senseibox could not scan right now. Press r to refresh networks.")
+            status.update(str(error) or "Senseibox could not scan right now. Press r to refresh networks.")
             status.add_class("error")
             self.app.log_exception("WiFi scan failed")
             return

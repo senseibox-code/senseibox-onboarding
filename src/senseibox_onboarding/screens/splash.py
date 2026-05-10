@@ -96,10 +96,10 @@ class SplashScreen(Screen[None]):
         try:
             self.app.pending_wifi_networks = await self.app.network_service.scan_wifi()
             self.app.pending_wifi_scan_error = None
-        except Exception:
+        except Exception as error:
             self.app.pending_wifi_networks = []
             self.app.pending_wifi_scan_error = (
-                "Senseibox could not scan right now. Press r to refresh networks."
+                str(error) or "Senseibox could not scan right now. Press r to refresh networks."
             )
             self.app.log_exception("Initial WiFi scan failed")
         self.app.state.step = "wifi"
