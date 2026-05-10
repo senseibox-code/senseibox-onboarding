@@ -1,0 +1,23 @@
+#!/bin/sh
+set -eu
+
+APP="/opt/senseibox/senseibox-onboarding/.venv/bin/senseibox-onboarding"
+COMPLETE_MARKER="/var/lib/senseibox/onboarding/complete"
+
+case " $* " in
+  *" --reset "*)
+    ;;
+  *)
+    if [ -f "$COMPLETE_MARKER" ]; then
+      echo "Senseibox setup is already complete."
+      echo "Run 'sudo senseibox-setup --reset' to set up again."
+      exit 0
+    fi
+    ;;
+esac
+
+if [ "$(id -u)" -ne 0 ]; then
+  exec sudo "$APP" "$@"
+fi
+
+exec "$APP" "$@"

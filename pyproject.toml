@@ -1,0 +1,29 @@
+[project]
+name = "senseibox-onboarding"
+version = "0.1.0"
+description = "Terminal-native first boot onboarding for Senseibox."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+  "textual>=0.58",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8,<9",
+]
+
+[project.scripts]
+senseibox-onboarding = "senseibox_onboarding.app:main"
+senseibox-wifi-onboarding = "senseibox_onboarding.app:wifi_main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/senseibox_onboarding"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]

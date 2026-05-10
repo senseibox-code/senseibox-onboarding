@@ -1,0 +1,31 @@
+[Unit]
+Description=Senseibox first boot onboarding
+Documentation=man:systemd.service(5)
+Wants=NetworkManager.service
+After=systemd-user-sessions.service NetworkManager.service
+ConditionPathExists=!/var/lib/senseibox/onboarding/complete
+
+[Service]
+Type=simple
+User=senseibox
+Group=senseibox
+WorkingDirectory=/opt/senseibox/senseibox-onboarding
+Environment=PYTHONUNBUFFERED=1
+Environment=TERM=linux
+Environment=TEXTUAL=1
+ExecStart=/opt/senseibox/senseibox-onboarding/.venv/bin/senseibox-onboarding
+Restart=always
+RestartSec=5
+StandardInput=tty
+StandardOutput=tty
+StandardError=journal
+TTYPath=/dev/tty1
+TTYReset=yes
+TTYVHangup=yes
+TTYVTDisallocate=yes
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+
+[Install]
+WantedBy=multi-user.target

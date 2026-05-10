@@ -1,0 +1,10 @@
+#!/bin/sh
+set -eu
+
+APP="/opt/senseibox/senseibox-onboarding/.venv/bin/senseibox-wifi-onboarding"
+
+if [ "$(id -u)" -ne 0 ]; then
+  exec sudo "$APP" "$@"
+fi
+
+exec "$APP" "$@"
