@@ -6,7 +6,7 @@ from textual.app import ComposeResult
 from textual.containers import Horizontal
 from textual.widgets import Button, Input, Static
 
-from senseibox_onboarding.screens.base import CommandLog, HintBar, StepHeader, WizardScreen
+from senseibox_onboarding.screens.base import HintBar, StepHeader, WizardScreen
 
 
 USERNAME_RE = re.compile(r"^[a-z_][a-z0-9_-]{0,31}$")
@@ -27,8 +27,6 @@ class LinuxAccountScreen(WizardScreen):
             yield Static("Verify password", classes="field-label")
             yield Input(placeholder="Verify password", password=True, id="linux_password_verify")
             yield Static("", id="account_status", classes="status")
-            yield Static(f"Log file: {self.app.config.paths.log_file}", classes="log-path")
-            yield CommandLog(id="command_log")
             with Horizontal(classes="actions"):
                 yield Button("Create user", id="create_account")
                 yield Button("Cancel", id="cancel_account")
@@ -36,7 +34,6 @@ class LinuxAccountScreen(WizardScreen):
 
     def on_mount(self) -> None:
         self.query_one("#linux_username", Input).focus()
-        self.set_interval(0.2, self._refresh_command_log)
         if self.app.state.linux_username:
             self.run_worker(self._continue_if_account_exists(), name="account-check", exclusive=True)
 
@@ -84,7 +81,6 @@ class LinuxAccountScreen(WizardScreen):
         self.app.clear_command_output()
         status.update("Creating Linux account...")
         result = await self.app.system_service.create_linux_account(username, password)
-        self._refresh_command_log()
         if not result.ok:
             status.update(result.message)
             status.add_class("error")
@@ -107,7 +103,3 @@ class LinuxAccountScreen(WizardScreen):
         if password.lower() == username.lower():
             return "The password must be different from the username."
         return None
-
-    def _refresh_command_log(self) -> None:
-        log = self.query_one("#command_log", CommandLog)
-        log.set_log_text(self.app.command_output_text(), follow=self.app.command_running)
