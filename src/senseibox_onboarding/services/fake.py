@@ -7,6 +7,9 @@ from senseibox_onboarding.services.system import SystemService
 
 
 class FakeNetworkManagerService:
+    async def has_wifi_device(self) -> bool:
+        return True
+
     async def scan_wifi(self) -> list[WifiNetwork]:
         await asyncio.sleep(0.4)
         return [

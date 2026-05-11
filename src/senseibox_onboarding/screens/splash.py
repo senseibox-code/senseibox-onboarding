@@ -52,6 +52,7 @@ class SplashScreen(Screen[None]):
     def __init__(self) -> None:
         super().__init__()
         self._dot_index = 0
+        self._status_message = "Searching for Wi-Fi connections"
 
     def compose(self) -> ComposeResult:
         with Vertical(id="splash_content"):
@@ -73,7 +74,11 @@ class SplashScreen(Screen[None]):
 
     def _status_text(self) -> str:
         dots = self.DOTS[self._dot_index]
-        return f"Searching for Wi-Fi connections{dots:<3}"
+        return f"{self._status_message}{dots:<3}"
+
+    def _set_status_message(self, message: str) -> None:
+        self._status_message = message
+        self.query_one("#splash_status", Static).update(self._status_text())
 
     def _logo_text(self) -> Text:
         logo = Text()
@@ -94,8 +99,24 @@ class SplashScreen(Screen[None]):
 
     async def _scan(self) -> None:
         try:
-            self.app.pending_wifi_networks = await self.app.network_service.scan_wifi()
-            self.app.pending_wifi_scan_error = None
+            self.app.pending_wired_connected = False
+            self.app.pending_wired_local_ip = None
+            if await self.app.network_service.has_wifi_device():
+                self.app.pending_wifi_networks = await self.app.network_service.scan_wifi()
+                self.app.pending_wifi_scan_error = None
+            else:
+                self._set_status_message("Checking wired network")
+                if await self.app.connectivity_service.has_internet():
+                    self.app.pending_wifi_networks = []
+                    self.app.pending_wifi_scan_error = None
+                    self.app.pending_wired_connected = True
+                    self.app.pending_wired_local_ip = await self.app.network_service.get_local_ip()
+                else:
+                    self.app.pending_wifi_networks = []
+                    self.app.pending_wifi_scan_error = (
+                        "No WiFi adapter was found and the wired network is not online. "
+                        "Connect Ethernet or WiFi hardware, then press r to refresh networks."
+                    )
         except Exception as error:
             self.app.pending_wifi_networks = []
             self.app.pending_wifi_scan_error = (

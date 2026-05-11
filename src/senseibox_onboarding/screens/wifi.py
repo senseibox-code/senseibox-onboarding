@@ -13,6 +13,8 @@ from senseibox_onboarding.screens.connecting import ConnectingScreen
 from senseibox_onboarding.screens.password import PasswordScreen
 
 
+SUCCESS_STYLE = "#00d26a bold"
+TEXT_STYLE = "#ffffff"
 SSID_WIDTH = 30
 SIGNAL_WIDTH = 4
 SECURITY_WIDTH = 8
@@ -89,16 +91,26 @@ class WifiScreen(WizardScreen):
         with self.page():
             yield StepHeader(
                 self.setup_title(),
-                "Select your local Wi-Fi network and enter the password.",
+                "Connect Senseibox to your local network.",
             )
             yield Static("Scanning...", id="wifi_status", classes="status")
             with Vertical(classes="wifi-box"):
                 yield Static(_network_header(), id="wifi_header")
                 yield ListView(id="wifi_list")
+            yield Static("", id="wired_success", classes="status hidden")
+            with Horizontal(classes="actions hidden", id="wired_actions"):
+                yield Button("Continue", id="continue_wired")
         yield HintBar("[↓][↑] Choose   [Enter] Select   [r] Refresh networks   [h] Hidden network   [Esc] Exit")
 
     def on_mount(self) -> None:
         self.networks = []
+        if self.app.pending_wired_connected:
+            local_ip = self.app.pending_wired_local_ip
+            self.app.pending_wired_connected = False
+            self.app.pending_wired_local_ip = None
+            self._show_wired_success(local_ip)
+            return
+
         if self.app.pending_wifi_networks is None and self.app.pending_wifi_scan_error is None:
             self.action_refresh_networks()
             return
@@ -117,6 +129,11 @@ class WifiScreen(WizardScreen):
         status = self.query_one("#wifi_status", Static)
         status.remove_class("error")
         status.update("Scanning for nearby networks...")
+        self.query_one("#wired_success", Static).add_class("hidden")
+        self.query_one("#wired_actions", Horizontal).add_class("hidden")
+        self.query_one(".hints", HintBar).update(
+            "[↓][↑] Choose   [Enter] Select   [r] Refresh networks   [h] Hidden network   [Esc] Exit"
+        )
         self.networks = []
         self.query_one("#wifi_header", Static).add_class("hidden")
         self.query_one("#wifi_list", ListView).clear()
@@ -168,6 +185,32 @@ class WifiScreen(WizardScreen):
             status.update("Select a network.")
         list_view.focus()
 
+    def _show_wired_success(self, local_ip: str | None) -> None:
+        self.query_one("#wifi_status", Static).update("Wired network connected.")
+        self.query_one("#wifi_header", Static).add_class("hidden")
+        self.query_one("#wifi_list", ListView).clear()
+        self.query_one("#wifi_list", ListView).styles.height = 0
+        self.query_one(".wifi-box", Vertical).styles.height = 0
+        self.query_one(".hints", HintBar).update("[Tab] Move   [Enter] Continue   [Esc] Exit")
+
+        ip_text = f" (Local IP is {local_ip})" if local_ip else ""
+        success = Text()
+        success.append("✓", style=SUCCESS_STYLE)
+        success.append(f" Wired network connected{ip_text}\n", style=TEXT_STYLE)
+        success.append("✓", style=SUCCESS_STYLE)
+        success.append(" Internet access verified\n\n", style=TEXT_STYLE)
+        if self.app.wifi_only:
+            success.append("Press Enter to exit.", style=TEXT_STYLE)
+            self.query_one(".hints", HintBar).update("[Tab] Move   [Enter] Exit   [Esc] Exit")
+        else:
+            success.append("Press Enter to continue.", style=TEXT_STYLE)
+            self.query_one(".hints", HintBar).update("[Tab] Move   [Enter] Continue   [Esc] Exit")
+
+        self.query_one("#wired_success", Static).update(success)
+        self.query_one("#wired_success", Static).remove_class("hidden")
+        self.query_one("#wired_actions", Horizontal).remove_class("hidden")
+        self.query_one("#continue_wired", Button).focus()
+
     def _resize_network_list(self) -> None:
         visible_rows = min(max(len(self.networks), 1), MAX_VISIBLE_NETWORKS)
         self.query_one("#wifi_list", ListView).styles.height = visible_rows
@@ -201,6 +244,18 @@ class WifiScreen(WizardScreen):
 
     def action_hidden(self) -> None:
         self.app.push_screen("hidden_wifi")
+
+    def on_button_pressed(self, event: Button.Pressed) -> None:
+        if event.button.id == "continue_wired":
+            self._continue_after_network()
+
+    def _continue_after_network(self) -> None:
+        if self.app.wifi_only:
+            self.app.exit()
+            return
+        self.app.state.step = "linux_account"
+        self.app.save_state()
+        self.app.push_screen("linux_account")
 
 
 class HiddenWifiScreen(WizardScreen):

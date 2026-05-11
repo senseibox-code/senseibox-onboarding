@@ -45,7 +45,7 @@ class NetworkManagerService:
 
     async def scan_wifi(self) -> list[WifiNetwork]:
         LOG.info("Starting WiFi scan")
-        if not await self._has_wifi_device():
+        if not await self.has_wifi_device():
             LOG.warning("No WiFi adapter found in NetworkManager device list")
             raise RuntimeError(NO_WIFI_ADAPTER_MESSAGE)
 
@@ -121,7 +121,7 @@ class NetworkManagerService:
             reverse=True,
         )
 
-    async def _has_wifi_device(self) -> bool:
+    async def has_wifi_device(self) -> bool:
         result = await self.runner.run(
             ["nmcli", "-t", "-f", "DEVICE,TYPE,STATE", "device", "status"],
             timeout_s=5,

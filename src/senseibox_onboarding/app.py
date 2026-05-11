@@ -98,6 +98,8 @@ class SenseiboxOnboardingApp(App[None]):
         self.selected_network: WifiNetwork | None = None
         self.pending_wifi_networks: list[WifiNetwork] | None = None
         self.pending_wifi_scan_error: str | None = None
+        self.pending_wired_connected = False
+        self.pending_wired_local_ip: str | None = None
         self.wifi_password: str | None = None
         self.hidden_network = False
         self.secured_security = Security.SECURED
