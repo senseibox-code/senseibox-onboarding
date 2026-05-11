@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import asyncio
+
 from rich.text import Text
 from textual.app import ComposeResult
 from textual.containers import Vertical
@@ -20,6 +22,7 @@ BORDER_STYLE = "#EBEBEB"
 TEXT_STYLE = "#EBEBEB"
 BOX_CHARACTERS = frozenset("┌┐└┘─│")
 MARK_CHARACTERS = frozenset("█◤◢")
+WIRED_SUCCESS_PAUSE_SECONDS = 3
 
 
 class SplashScreen(Screen[None]):
@@ -53,6 +56,7 @@ class SplashScreen(Screen[None]):
         super().__init__()
         self._dot_index = 0
         self._status_message = "Searching for Wi-Fi connections"
+        self._is_loading = True
 
     def compose(self) -> ComposeResult:
         with Vertical(id="splash_content"):
@@ -73,11 +77,12 @@ class SplashScreen(Screen[None]):
         self.query_one("#splash_status", Static).update(self._status_text())
 
     def _status_text(self) -> str:
-        dots = self.DOTS[self._dot_index]
+        dots = self.DOTS[self._dot_index] if self._is_loading else ""
         return f"{self._status_message}{dots:<3}"
 
-    def _set_status_message(self, message: str) -> None:
+    def _set_status_message(self, message: str, *, loading: bool = True) -> None:
         self._status_message = message
+        self._is_loading = loading
         self.query_one("#splash_status", Static).update(self._status_text())
 
     def _logo_text(self) -> Text:
@@ -111,6 +116,8 @@ class SplashScreen(Screen[None]):
                     self.app.pending_wifi_scan_error = None
                     self.app.pending_wired_connected = True
                     self.app.pending_wired_local_ip = await self.app.network_service.get_local_ip()
+                    self._set_status_message("Wired network connected", loading=False)
+                    await asyncio.sleep(WIRED_SUCCESS_PAUSE_SECONDS)
                 else:
                     self.app.pending_wifi_networks = []
                     self.app.pending_wifi_scan_error = (
