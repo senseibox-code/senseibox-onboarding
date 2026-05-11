@@ -186,22 +186,22 @@ class SystemService:
         await self.runner.run(["systemctl", "start", "senseibox.target"], timeout_s=20)
 
     async def open_login_session(self, username: str) -> LoginResult:
-        """Replace onboarding with the new user's login shell on the current TTY.
+        """Replace onboarding with the new user's login shell.
 
-        This is intended for the production tty1 systemd unit running as root.
-        In development, or if `login` is unavailable, callers get a readable
-        failure and can simply exit instead.
+        This is intended for root-launched setup sessions, including local tty,
+        ADB-style shells, and manual `sudo senseibox-setup` runs. A login shell
+        changes to the user's home directory and loads the normal shell profile.
         """
 
         if hasattr(os, "geteuid") and os.geteuid() != 0:
             return LoginResult(False, "Auto-login requires the onboarding service to run as root.")
 
-        login_path = shutil.which("login")
-        if login_path is None:
-            return LoginResult(False, "The login program was not found.")
+        su_path = shutil.which("su")
+        if su_path is None:
+            return LoginResult(False, "The su program was not found.")
 
         try:
-            os.execv(login_path, [login_path, "-f", username])
+            os.execv(su_path, [su_path, "--login", username])
         except OSError as exc:
             return LoginResult(False, f"Could not open a login session: {exc}")
 
