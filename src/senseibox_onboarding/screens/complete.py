@@ -78,6 +78,7 @@ class CompleteScreen(WizardScreen):
                     "Press [Enter] to exit, or [u] to update hostname.",
                     id="finish_status",
                     classes="instruction",
+                    markup=False,
                 )
         yield HintBar("[Tab] Move   [Enter] Activate   [Esc] Exit")
 
