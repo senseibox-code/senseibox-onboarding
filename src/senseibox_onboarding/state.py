@@ -20,6 +20,7 @@ class OnboardingState:
     completed: bool = False
     step: str = "welcome"
     linux_username: str | None = None
+    hostname: str | None = None
     selected_ssid: str | None = None
     connection_failures: int = 0
     openclaw_setup_requested: bool = False

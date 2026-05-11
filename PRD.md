@@ -82,7 +82,9 @@ The app should enable the required system services for SSH access after the acco
 
 ### Step 3: Setup Completed
 
-The final screen should confirm that setup is complete and explain how to connect over SSH:
+The final step should ask the user to choose a hostname for the device. The app should configure the hostname and then replace the form with SSH connection instructions that use the selected hostname.
+
+After hostname configuration, the screen should confirm that setup is complete and explain how to connect over SSH:
 
 1. Open a terminal.
 2. Run the SSH command using the Linux account name.
@@ -90,6 +92,8 @@ The final screen should confirm that setup is complete and explain how to connec
 4. Enter the password created during setup.
 
 The screen should then allow Senseibox services to start and, where possible, open a local login session for the created account.
+
+The user should also be able to return to hostname editing from this screen before finishing setup.
 
 ## Functional Requirements
 
@@ -123,6 +127,15 @@ The screen should then allow Senseibox services to start and, where possible, op
 - Ensure SSH host keys exist.
 - Enable SSH after the account is ready.
 - Support updating an existing valid user.
+
+### Hostname Setup
+
+- Ask the user to choose a local hostname before showing SSH instructions.
+- Validate the hostname before applying it.
+- Configure the system hostname.
+- Keep `/etc/hosts` aligned with the chosen hostname.
+- Use the selected hostname in SSH instructions.
+- Allow the user to update the hostname before finishing setup.
 
 ### Persistence And Recovery
 
@@ -194,6 +207,7 @@ The onboarding flow is considered ready when:
 - A device with no network path shows a clear recoverable message.
 - Wrong WiFi passwords are handled without restarting the app.
 - Existing Linux users are handled without duplicate-user failure.
+- The user can choose a hostname and see SSH instructions using that hostname.
 - The completion screen shows correct SSH guidance.
 - Secrets do not appear in logs, command output, tests, docs, or commits.
 - The app remains usable from a keyboard-only terminal.

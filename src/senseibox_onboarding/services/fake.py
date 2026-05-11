@@ -2,7 +2,15 @@ from __future__ import annotations
 
 import asyncio
 
-from senseibox_onboarding.models import AccountResult, CheckResult, ConnectionResult, LoginResult, Security, WifiNetwork
+from senseibox_onboarding.models import (
+    AccountResult,
+    CheckResult,
+    ConnectionResult,
+    HostnameResult,
+    LoginResult,
+    Security,
+    WifiNetwork,
+)
 from senseibox_onboarding.services.system import SystemService
 
 
@@ -79,6 +87,10 @@ class FakeSystemService(SystemService):
 
     async def launch_main_services(self) -> None:
         return None
+
+    async def configure_hostname(self, hostname: str) -> HostnameResult:
+        await asyncio.sleep(0.2)
+        return HostnameResult(True, f"Hostname updated to {hostname}.")
 
     async def open_login_session(self, username: str) -> LoginResult:
         await asyncio.sleep(0.2)

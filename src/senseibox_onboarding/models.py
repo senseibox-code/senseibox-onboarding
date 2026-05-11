@@ -58,6 +58,12 @@ class AccountResult:
 
 
 @dataclass(frozen=True)
+class HostnameResult:
+    ok: bool
+    message: str
+
+
+@dataclass(frozen=True)
 class LoginResult:
     ok: bool
     message: str

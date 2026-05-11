@@ -4,7 +4,7 @@ import logging
 import os
 import shutil
 
-from senseibox_onboarding.models import AccountResult, CheckResult, LoginResult
+from senseibox_onboarding.models import AccountResult, CheckResult, HostnameResult, LoginResult
 from senseibox_onboarding.services.process import CommandRunner
 
 LOG = logging.getLogger(__name__)
@@ -184,6 +184,52 @@ class SystemService:
 
     async def launch_main_services(self) -> None:
         await self.runner.run(["systemctl", "start", "senseibox.target"], timeout_s=20)
+
+    async def configure_hostname(self, hostname: str) -> HostnameResult:
+        result = await self.runner.run(
+            ["hostnamectl", "set-hostname", hostname],
+            timeout_s=10,
+        )
+        if result.returncode != 0:
+            LOG.warning("hostnamectl set-hostname failed: %s", result.stderr.strip())
+            return HostnameResult(False, "Senseibox could not update the hostname.")
+
+        if not self._update_hosts_file(hostname):
+            return HostnameResult(False, "The hostname was set, but /etc/hosts could not be updated.")
+
+        return HostnameResult(True, f"Hostname updated to {hostname}.")
+
+    def _update_hosts_file(self, hostname: str) -> bool:
+        hosts_path = "/etc/hosts"
+        try:
+            with open(hosts_path, encoding="utf-8") as hosts_file:
+                lines = hosts_file.readlines()
+        except OSError as exc:
+            LOG.warning("Could not read /etc/hosts: %s", exc)
+            return False
+
+        replacement = f"127.0.1.1\t{hostname}.local\t{hostname}\n"
+        replaced = False
+        updated: list[str] = []
+        for line in lines:
+            stripped = line.strip()
+            if stripped.startswith("127.0.1.1"):
+                if not replaced:
+                    updated.append(replacement)
+                    replaced = True
+                continue
+            updated.append(line)
+
+        if not replaced:
+            updated.append(replacement)
+
+        try:
+            with open(hosts_path, "w", encoding="utf-8") as hosts_file:
+                hosts_file.writelines(updated)
+        except OSError as exc:
+            LOG.warning("Could not update /etc/hosts: %s", exc)
+            return False
+        return True
 
     async def open_login_session(self, username: str) -> LoginResult:
         """Replace onboarding with the new user's login shell.
