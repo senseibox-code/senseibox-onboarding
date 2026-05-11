@@ -103,8 +103,6 @@ class SystemService:
         if not await self._enable_ssh():
             return AccountResult(False, "The account is ready, but Senseibox could not enable SSH.")
 
-        await self._enable_arduino_network_mode()
-
         if user_existed:
             return AccountResult(True, "Linux account updated.")
         return AccountResult(True, "Linux account created.")
@@ -179,18 +177,6 @@ class SystemService:
             LOG.warning("systemctl status ssh failed: %s", status.stderr.strip())
             return False
         return True
-
-    async def _enable_arduino_network_mode(self) -> None:
-        cli = shutil.which("arduino-app-cli")
-        if cli is None:
-            LOG.info("arduino-app-cli not found; skipping Arduino network-mode enable")
-            return
-        result = await self.runner.run(
-            [cli, "system", "network-mode", "enable"],
-            timeout_s=20,
-        )
-        if result.returncode != 0:
-            LOG.warning("arduino-app-cli network-mode enable failed: %s", result.stderr.strip())
 
     async def account_exists(self, username: str) -> bool:
         existing = await self.runner.run(["id", "-u", username], timeout_s=5)
