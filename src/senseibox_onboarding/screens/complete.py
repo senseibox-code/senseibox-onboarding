@@ -71,17 +71,12 @@ class CompleteScreen(WizardScreen):
                 yield _yes_step()
                 yield _numbered_step(
                     4,
-                    "Enter the password for the board. This is the password you chose previously.",
+                    "Enter the password for the box. This is the password you chose previously.",
                 )
                 yield Static("")
                 yield Static(
-                    "Press Enter to start Senseibox services and open your local login session.",
+                    "Press [Enter] to exit, or [u] to update hostname.",
                     id="finish_status",
-                    classes="instruction",
-                )
-                yield Static(
-                    f"Press u to update hostname {hostname}.",
-                    id="hostname_update_hint",
                     classes="instruction",
                 )
         yield HintBar("[Tab] Move   [Enter] Activate   [Esc] Exit")
@@ -106,6 +101,9 @@ class CompleteScreen(WizardScreen):
         hostname_input = self.query_one("#hostname_input", Input)
         hostname_input.value = self.app.state.hostname or DEFAULT_HOSTNAME
         hostname_input.focus()
+        status = self.query_one("#hostname_status", Static)
+        status.update("")
+        status.remove_class("error")
         self.query_one(".hints", HintBar).update("[Tab] Move   [Enter] Activate   [Esc] Exit")
 
     async def _save_hostname(self) -> None:
@@ -128,16 +126,12 @@ class CompleteScreen(WizardScreen):
 
         self.app.state.hostname = hostname
         self.app.save_state()
-        status.update(result.message)
         self._show_ssh_instructions()
 
     def _show_ssh_instructions(self) -> None:
         username = self.app.state.linux_username or "your-user"
         hostname = self.app.state.hostname or DEFAULT_HOSTNAME
         self.query_one("#ssh_command", Static).update(f"$  ssh {username}@{hostname}.local")
-        self.query_one("#hostname_update_hint", Static).update(
-            f"Press u to update hostname {hostname}."
-        )
         self.query_one("#hostname_section", Vertical).add_class("hidden")
         self.query_one("#ssh_section", Vertical).remove_class("hidden")
         self.query_one(".hints", HintBar).update("[Enter] Finish   [u] Update hostname")
@@ -167,9 +161,5 @@ class CompleteScreen(WizardScreen):
         await self.app.system_service.launch_main_services()
         username = self.app.state.linux_username
         if username:
-            result = await self.app.system_service.open_login_session(username)
-            if not result.ok:
-                self.query_one("#finish_status", Static).update(
-                    result.message + " Exiting setup instead."
-                )
+            self.app.login_after_exit = username
         self.app.exit()

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import asyncio
 import logging
 import os
 import time
@@ -103,6 +104,7 @@ class SenseiboxOnboardingApp(App[None]):
         self.wifi_password: str | None = None
         self.hidden_network = False
         self.secured_security = Security.SECURED
+        self.login_after_exit: str | None = None
 
     def on_mount(self) -> None:
         if self.wifi_only:
@@ -183,7 +185,13 @@ def main() -> None:
     if args.reset:
         reset_onboarding_state(config)
 
-    SenseiboxOnboardingApp(config, wifi_only=args.wifi_only).run(mouse=False)
+    app = SenseiboxOnboardingApp(config, wifi_only=args.wifi_only)
+    app.run(mouse=False)
+    if app.login_after_exit:
+        print("\033[2J\033[H", end="", flush=True)
+        result = asyncio.run(app.system_service.open_login_session(app.login_after_exit))
+        if not result.ok:
+            print(result.message)
 
 
 if __name__ == "__main__":
