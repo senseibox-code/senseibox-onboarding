@@ -68,6 +68,10 @@ The onboarding service is terminal-based and does not expose an HTTP port or HTT
 
 The product version is stored in `VERSION` and must match `pyproject.toml`.
 
+## Product Requirements
+
+The onboarding product requirements live in `PRD.md`. Use that document for product goals, user flows, acceptance criteria, and future scope.
+
 ## Notes
 
 This project targets Debian-based Senseibox appliance images. It expects NetworkManager, systemd, and the required Linux account-management tools to be available on the target image.
