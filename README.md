@@ -2,6 +2,8 @@
 
 Terminal-native first boot onboarding for Senseibox appliances. The app guides a user through WiFi setup, Linux account creation, SSH enablement, and completion without exposing Linux internals during normal setup.
 
+![Senseibox onboarding terminal flow](docs/assets/senseibox-onboarding.png)
+
 ## Features
 
 - Textual-based terminal UI with keyboard-first navigation
@@ -71,6 +73,10 @@ The product version is stored in `VERSION` and must match `pyproject.toml`.
 ## Product Requirements
 
 The onboarding product requirements live in `PRD.md`. Use that document for product goals, user flows, acceptance criteria, and future scope.
+
+## License
+
+This software is licensed under GPL-3.0.
 
 ## Notes
 
