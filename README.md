@@ -40,7 +40,7 @@ python -m senseibox_onboarding.app --wifi-only
 
 The installed product commands are `senseibox-setup` and `senseibox-wifi-setup`. The app does not expose separate public Python console scripts; the wrappers call the Python module directly inside the installed virtualenv.
 
-## Install As A Service
+## Install as a Service
 
 After checking out the repo on a Linux system, run:
 
