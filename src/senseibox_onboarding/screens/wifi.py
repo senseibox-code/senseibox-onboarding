@@ -201,6 +201,7 @@ class WifiScreen(WizardScreen):
         success.append(" Internet access verified\n\n", style=TEXT_STYLE)
         if self.app.wifi_only:
             success.append("Press Enter to exit.", style=TEXT_STYLE)
+            self.app.set_wifi_exit_confirmation("wired network", local_ip)
             self.query_one(".hints", HintBar).update("[Tab] Move   [Enter] Exit   [Esc] Exit")
         else:
             success.append("Press Enter to continue.", style=TEXT_STYLE)
@@ -220,7 +221,14 @@ class WifiScreen(WizardScreen):
         if isinstance(event.item, NetworkItem):
             network = event.item.network
             if network.in_use:
-                self._continue_after_network()
+                if self.app.wifi_only:
+                    self.run_worker(
+                        self._exit_wifi_setup(network),
+                        name="wifi-continue-connected",
+                        exclusive=True,
+                    )
+                else:
+                    self._continue_to_account()
                 return
 
             self.app.selected_network = network
@@ -245,12 +253,22 @@ class WifiScreen(WizardScreen):
 
     def on_button_pressed(self, event: Button.Pressed) -> None:
         if event.button.id == "continue_wired":
-            self._continue_after_network()
+            if self.app.wifi_only:
+                self.run_worker(
+                    self._exit_wifi_setup(),
+                    name="wifi-continue-wired",
+                    exclusive=True,
+                )
+            else:
+                self._continue_to_account()
 
-    def _continue_after_network(self) -> None:
-        if self.app.wifi_only:
-            self.app.exit()
-            return
+    async def _exit_wifi_setup(self, network: WifiNetwork | None = None) -> None:
+        if network is not None:
+            local_ip = await self.app.network_service.get_local_ip()
+            self.app.set_wifi_exit_confirmation(network.ssid, local_ip)
+        self.app.exit()
+
+    def _continue_to_account(self) -> None:
         self.app.state.step = "linux_account"
         self.app.save_state()
         self.app.push_screen("linux_account")

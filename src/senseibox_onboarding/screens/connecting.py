@@ -99,6 +99,7 @@ class ConnectingScreen(WizardScreen):
 
         online = await self.app.connectivity_service.has_internet()
         if self.app.wifi_only:
+            self.app.set_wifi_exit_confirmation(network.ssid, local_ip)
             self._show_complete(ip_text, online)
             self._refresh_command_log()
             return

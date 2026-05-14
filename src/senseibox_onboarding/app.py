@@ -105,6 +105,8 @@ class SenseiboxOnboardingApp(App[None]):
         self.hidden_network = False
         self.secured_security = Security.SECURED
         self.login_after_exit: str | None = None
+        self.wifi_exit_ssid: str | None = None
+        self.wifi_exit_local_ip: str | None = None
 
     def on_mount(self) -> None:
         if self.wifi_only:
@@ -166,6 +168,10 @@ class SenseiboxOnboardingApp(App[None]):
         self.save_state()
         self.exit()
 
+    def set_wifi_exit_confirmation(self, ssid: str, local_ip: str | None = None) -> None:
+        self.wifi_exit_ssid = ssid
+        self.wifi_exit_local_ip = local_ip
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(description="Run Senseibox onboarding.")
@@ -192,6 +198,9 @@ def main() -> None:
         result = asyncio.run(app.system_service.open_login_session(app.login_after_exit))
         if not result.ok:
             print(result.message)
+    elif app.wifi_only and app.wifi_exit_ssid:
+        ip_text = f" ({app.wifi_exit_local_ip})" if app.wifi_exit_local_ip else ""
+        print(f"Connected to {app.wifi_exit_ssid}{ip_text}")
 
 
 if __name__ == "__main__":
