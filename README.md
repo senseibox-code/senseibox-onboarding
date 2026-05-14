@@ -23,6 +23,9 @@ pip install -e .
 python -m senseibox_onboarding.app
 ```
 
+Note: This project targets Debian-based Senseibox appliance images. It expects NetworkManager, systemd, and the required Linux account-management tools to be available on the target image.
+
+
 For development on machines without NetworkManager WiFi hardware, run with fake service data:
 
 ```bash
@@ -77,7 +80,3 @@ The onboarding product requirements live in `PRD.md`. Use that document for prod
 ## License
 
 This software is licensed under GPL-3.0.
-
-## Notes
-
-This project targets Debian-based Senseibox appliance images. It expects NetworkManager, systemd, and the required Linux account-management tools to be available on the target image.
