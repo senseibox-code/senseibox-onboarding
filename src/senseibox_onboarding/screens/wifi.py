@@ -220,9 +220,7 @@ class WifiScreen(WizardScreen):
         if isinstance(event.item, NetworkItem):
             network = event.item.network
             if network.in_use:
-                self.query_one("#wifi_status", Static).update(
-                    f"Already connected to {network.ssid}. Choose a different network to change Wi-Fi."
-                )
+                self._continue_after_network()
                 return
 
             self.app.selected_network = network
